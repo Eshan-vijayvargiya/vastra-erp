@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Vastra Mills · Purchases{% endblock %}
+{% block local_end %}
+<nav class="subnav" aria-label="Purchase sections"><a href="#reorder" aria-current="page">Reorder</a><a href="#open">Open orders</a><a href="#payables">To pay</a><a href="#suppliers">Suppliers</a></nav>
+{% endblock %}
+{% block content %}
+<section class="wrap head">
+  <h1 class="h-xl" style="flex:1 1 520px">Purchases. <span class="muted">{{ n_reorder }} materials to reorder, {{ open_pos | length }} orders on the way.</span></h1>
+  <p class="lede">Order quantities use the economic order quantity (EOQ): big enough to save on ordering, small enough not to tie up cash in stock.</p>
+</section>
+<section class="band">
+  <img src="{{ url_for('static', path='img/thread-lot.jpg') }}" alt="Cones of cotton thread in many colours" style="object-position:center 55%">
+  <div class="chips"><div class="wrap">
+    <div class="glass"><div class="k">Bought, last 12 months</div><div class="v">{{ spend | lakh }}</div></div>
+    <div class="glass"><div class="k">On the way</div><div class="v">{{ open_pos | length }} POs</div></div>
+    <div class="glass"><div class="k">To pay suppliers</div><div class="v">{{ pay.total | lakh }}</div></div>
+  </div></div>
+</section>
+
+<section class="wrap stack section">
+  <div class="card" id="reorder">
+    <div class="card-head"><h2 class="h2">Reorder now</h2><span class="muted" style="font-size:14px">One purchase order per supplier</span></div>
+    {% if by_sup %}
+    <form method="post" action="/purchases/raise">
+      {% for sup, rows in by_sup.items() %}
+      <h3 style="font-size:15px;margin:18px 0 4px">{{ sup }} <span class="muted" style="font-weight:400">· delivers in {{ rows[0].lead }} days</span></h3>
+      <ul class="list">
+        {% for r in rows %}
+        <li>
+          <input type="checkbox" name="material_id" value="{{ r.m.id }}" checked aria-label="Order {{ r.m.name }}" style="width:18px;height:18px">
+          {% if r.m.photo %}<img class="thumb" src="{{ url_for('static', path='img/' ~ r.m.photo) }}" alt="">{% else %}<div class="thumb noimg">{{ icon("box", 24) }}</div>{% endif %}
+          <div class="grow"><div class="t1">{{ r.m.name }} <span class="warn" style="font-weight:500;margin-left:6px">{{ r.have | num(1) }} {{ r.m.unit }} left</span></div>
+            <div class="t2">Uses {{ r.rate | num(1) }} {{ r.m.unit }} a day · reorder point {{ r.rop | num(1) }} · order {{ r.suggest | num(1) }} {{ r.m.unit }} ({{ (r.suggest * r.m.cost) | rupees }})</div></div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endfor %}
+      <div style="margin-top:18px"><button class="btn" type="submit">Raise purchase orders</button></div>
+    </form>
+    {% else %}<p class="muted">Every material is above its reorder point.</p>{% endif %}
+  </div>
+
+  <div class="card" id="open">
+    <div class="card-head"><h2 class="h2">On the way</h2></div>
+    <div class="tbox"><table class="t" style="min-width:720px">
+      <thead><tr><th>Order</th><th>Supplier</th><th>Items</th><th>Expected</th><th class="r">Amount</th><th></th></tr></thead>
+      <tbody>
+      {% for po in open_pos %}
+        <tr><td style="font-weight:500">{{ po.number }}<div class="muted" style="font-size:12px;font-weight:400">ordered {{ po.order_date | dm }}</div></td><td>{{ po.supplier.name }}</td>
+          <td class="muted">{% for l in po.lines %}{{ l.material.name }} {{ l.qty | num(1) }} {{ l.material.unit }}{% if not loop.last %}; {% endif %}{% endfor %}</td>
+          <td>{% if po.expected_date < today %}<span class="status s-warn">{{ po.expected_date | dm }} · late</span>{% else %}{{ po.expected_date | dm }}{% endif %}</td>
+          <td class="r num">{{ po.amount | rupees }}</td>
+          <td class="r"><form class="inline" method="post" action="/purchases/{{ po.id }}/receive"><button class="btn sm grey" type="submit">Mark received</button></form></td></tr>
+      {% else %}<tr><td colspan="6" class="muted">No open purchase orders.</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="grid wide">
+    <div class="card" id="payables">
+      <div class="card-head"><h2 class="h3">To pay suppliers</h2><span class="muted" style="font-size:14px">{{ pay.total | rupees }}</span></div>
+      <ul class="list">
+        {% for po, bal, age in pay.rows[:8] %}
+        <li><div class="grow"><div class="t1">{{ po.supplier.name }}</div><div class="t2">{{ po.number }} · received {{ age }} days ago</div></div>
+          <span class="num" style="font-weight:600">{{ bal | rupees }}</span>
+          <form class="inline" method="post" action="/purchases/{{ po.id }}/pay"><button class="linkbtn" type="submit">Pay {{ icon("chev", 14) }}</button></form></li>
+        {% else %}<li class="muted">Nothing to pay.</li>{% endfor %}
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2 class="h3">Recently received</h2></div>
+      <ul class="list">
+        {% for po in recent %}
+        <li><div class="grow"><div class="t1">{{ po.supplier.name }}</div><div class="t2">{{ po.number }} · {{ po.received_date | dm }}{% if po.received_date > po.expected_date %} · {{ (po.received_date - po.expected_date).days }} days late{% endif %}</div></div>
+          <span class="num">{{ po.amount | rupees }}</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" id="suppliers">
+    <div class="card-head"><h2 class="h2">Suppliers</h2><span class="muted" style="font-size:14px">Last 12 months</span></div>
+    <div class="tbox"><table class="t" style="min-width:640px">
+      <thead><tr><th>Supplier</th><th>City</th><th class="r">Lead time</th><th class="r">Orders</th><th class="r">Bought</th><th class="r">On time</th></tr></thead>
+      <tbody>
+      {% for s in sups %}{% set sc = score[s.id] %}
+        <tr><td style="font-weight:500">{{ s.name }}</td><td class="muted">{{ s.city }}</td><td class="r">{{ s.lead_days }} days</td><td class="r num">{{ sc.n }}</td>
+          <td class="r num">{{ sc.value | lakh }}</td>
+          <td class="r">{% if sc.n %}{% set pct = (100 * sc.on_time / sc.n) | round | int %}<span class="{{ 'ok' if pct >= 80 else 'warn' }}" style="font-weight:500">{{ pct }}%</span>{% else %}–{% endif %}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Vastra Mills · Sales{% endblock %}
+{% block local_end %}
+<nav class="subnav" aria-label="Sales sections"><a href="#orders" aria-current="page">Orders</a><a href="#invoices">Invoices</a><a href="#customers">Customers</a></nav>
+<a class="btn sm" href="#new">{{ icon("plus", 14) }}New order</a>
+{% endblock %}
+{% block content %}
+<section class="wrap head">
+  <h1 class="h-xl" style="flex:1 1 520px">Sales. <span class="muted">{{ orders | selectattr('status', 'equalto', 'Open') | list | length }} open orders worth {{ open_value | lakh }}.</span></h1>
+  <p class="lede">An order ships when finished stock covers every line. Shipping writes the invoice; the customer's credit days set the due date.</p>
+</section>
+<section class="band">
+  <img src="{{ url_for('static', path='img/shirts-colour-rack.jpg') }}" alt="Shirts in many colours on a rack" style="object-position:center 40%">
+  <div class="chips"><div class="wrap">
+    <div class="glass"><div class="k">Days from order to ship</div><div class="v">{{ avg_days | num(1) }}</div></div>
+    <div class="glass"><div class="k">Shipped on time, 90 days</div><div class="v">{{ on_time | num }}%</div></div>
+    <div class="glass"><div class="k">To collect</div><div class="v">{{ rec.total | lakh }}</div></div>
+    <div class="glass"><div class="k">Overdue</div><div class="v">{{ rec.overdue | lakh }}</div></div>
+  </div></div>
+</section>
+
+<section class="wrap stack section">
+  <div class="card" id="orders">
+    <div class="card-head">
+      <h2 class="h2">{% if q %}Orders matching “{{ q }}”{% else %}Open orders{% endif %}</h2>
+      <form class="search" method="get" action="/sales" role="search" style="background:var(--bg)">{{ icon("search", 16) }}<input type="search" name="q" value="{{ q }}" aria-label="Search orders" placeholder="Customer or order number"></form>
+    </div>
+    <div class="tbox"><table class="t" style="min-width:860px">
+      <thead><tr><th>Customer</th><th>Order</th><th>Items</th><th>Due</th><th class="r">Amount</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+      {% for o in orders %}
+        <tr><td style="font-weight:600">{{ o.customer.name }}<div class="muted" style="font-size:12px;font-weight:400">{{ o.customer.kind }}</div></td>
+          <td class="muted">{{ o.number }} · {{ o.order_date | dm }}</td>
+          <td class="muted" style="max-width:280px">{% for l in o.lines %}{{ l.product.name }} × {{ l.qty | num }}{% if not loop.last %}; {% endif %}{% endfor %}</td>
+          <td>{{ o.due_date | dm }}</td><td class="r num" style="font-weight:600">{{ o.amount | rupees }}</td>
+          <td>{% if o.status == 'Shipped' %}<span class="status s-ok">Shipped {{ o.shipped_date | dm }}</span>
+              {% elif o.due_date < today %}<span class="status s-warn">Late</span>
+              {% elif shippable[o.id] %}<span class="status s-info">Ready</span>{% else %}<span class="status s-muted">Waiting for stock</span>{% endif %}</td>
+          <td class="r">{% if o.status == 'Open' %}<form class="inline" method="post" action="/sales/{{ o.id }}/ship"><button class="btn sm {{ '' if shippable[o.id] else 'grey' }}" type="submit"{% if not shippable[o.id] %} disabled title="Not enough finished stock"{% endif %}>Ship</button></form>{% endif %}</td></tr>
+      {% else %}<tr><td colspan="7" class="muted">No orders found.</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="card" id="new">
+    <h2 class="h3">New order</h2>
+    <p class="muted" style="margin:6px 0 18px">Prices come from the product list. Up to three products per order here.</p>
+    <form method="post" action="/sales/new" style="display:flex;flex-direction:column;gap:14px">
+      <div class="field"><label for="customer_id">Customer</label><select id="customer_id" name="customer_id" required>
+        {% for c in customers %}<option value="{{ c.id }}">{{ c.name }} ({{ c.kind }})</option>{% endfor %}</select></div>
+      {% for i in range(1, 4) %}
+      <div class="form-row" style="grid-template-columns:minmax(0,3fr) minmax(0,1fr)">
+        <div class="field"><label for="product_{{ i }}">Product {{ i }}{% if i > 1 %} (optional){% endif %}</label><select id="product_{{ i }}" name="product_{{ i }}">
+          {% if i > 1 %}<option value="">–</option>{% endif %}
+          {% for p in products %}<option value="{{ p.id }}">{{ p.name }} · {{ p.price | rupees }}{% if p.unit == 'm' %}/m{% endif %}</option>{% endfor %}</select></div>
+        <div class="field"><label for="qty_{{ i }}">Quantity</label><input id="qty_{{ i }}" name="qty_{{ i }}" type="number" min="0" step="1" {% if i == 1 %}value="50" required{% endif %}></div>
+      </div>
+      {% endfor %}
+      <div><button class="btn" type="submit">Book order</button></div>
+    </form>
+  </div>
+
+  <div class="grid wide">
+    <div class="card" id="invoices">
+      <div class="card-head"><h2 class="h3">Money to collect</h2><span class="muted" style="font-size:14px">Most overdue first</span></div>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:8px 0 14px">
+        {% for name, amt in rec.buckets.items() %}<div style="background:var(--bg);border-radius:14px;padding:12px 14px"><div class="muted" style="font-size:12px">{{ name }}</div><div style="font-size:20px;font-weight:600" class="{{ 'warn' if 'late' in name and amt > 0 else '' }}">{{ amt | lakh }}</div></div>{% endfor %}
+      </div>
+      <ul class="list">
+        {% for inv, bal, late in rec.open[:8] %}
+        <li><div class="grow"><div class="t1">{{ inv.customer.name }}</div><div class="t2">{{ inv.number }} · due {{ inv.due_date | dm }}{% if late > 0 %} · <span class="warn">{{ late }} days late</span>{% endif %}</div></div>
+          <span class="num" style="font-weight:600">{{ bal | rupees }}</span>
+          <form class="inline" method="post" action="/invoices/{{ inv.id }}/pay"><button class="linkbtn" type="submit">Paid {{ icon("check", 14) }}</button></form></li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="card" id="customers">
+      <div class="card-head"><h2 class="h3">Top customers</h2><span class="muted" style="font-size:14px">Last 12 months</span></div>
+      <ul class="list">
+        {% for c, v, owe in top %}
+        <li><div class="grow"><div class="t1">{{ c.name }}</div><div class="t2">{{ c.kind }} · {{ c.credit_days }} days credit{% if owe > 0 %} · owes {{ owe | rupees }}{% endif %}</div></div><span class="num" style="font-weight:600">{{ v | lakh }}</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</section>
+{% endblock %}

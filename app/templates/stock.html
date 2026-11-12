@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Vastra Mills · Stock{% endblock %}
+{% block local_end %}
+<nav class="subnav" aria-label="Stock sections"><a href="#goods" aria-current="page">Finished goods</a><a href="#materials">Materials</a></nav>
+<a class="btn sm" href="/purchases">Reorder list</a>
+{% endblock %}
+{% block content %}
+<section class="wrap head">
+  <h1 class="h-xl" style="flex:1 1 520px">Stock. <span class="muted">Worth {{ (goods_value + mat_value) | lakh }} at cost.</span></h1>
+  <p class="lede">Every number here is the sum of the stock ledger: purchases in, materials issued to work orders, finished goods made and sold.</p>
+</section>
+<section class="band">
+  <img src="{{ url_for('static', path='img/fabric-shelves.jpg') }}" alt="Shelves stacked with fabric and clothes" style="object-position:center 40%">
+  <div class="chips"><div class="wrap">
+    <div class="glass"><div class="k">Finished goods</div><div class="v">{{ goods_value | lakh }}</div></div>
+    <div class="glass"><div class="k">Materials</div><div class="v">{{ mat_value | lakh }}</div></div>
+    <div class="glass"><div class="k">Materials to reorder</div><div class="v">{{ n_reorder }}</div></div>
+    <div class="glass"><div class="k">Products low or short</div><div class="v">{{ n_low }}</div></div>
+  </div></div>
+</section>
+
+<section class="wrap stack section">
+  <div class="card" id="goods">
+    <div class="card-head"><h2 class="h2">Finished goods</h2><span class="muted" style="font-size:14px">Free = on hand − promised to open orders</span></div>
+    <div class="tbox"><table class="t" style="min-width:820px">
+      <thead><tr><th>Product</th><th>Category</th><th class="r">On hand</th><th class="r">For open orders</th><th class="r">Free</th><th class="r">Safety stock</th><th class="r">Being made</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for r in prods %}
+        <tr><td><a href="/products/{{ r.p.sku }}" style="color:var(--ink);font-weight:500">{{ r.p.name }}</a></td><td class="muted">{{ r.p.category }}</td>
+          <td class="r num">{{ r.have | num }}</td><td class="r num">{{ r.booked | num }}</td><td class="r num">{{ r.free | num }}</td>
+          <td class="r num muted">{{ r.p.safety_stock | num }}</td><td class="r num">{{ r.wip | num }}</td>
+          <td><span class="status {{ 's-ok' if r.status == 'OK' else 's-warn' }}">{{ {'OK': 'OK', 'Low': 'Below safety', 'Short': 'Short'}[r.status] }}</span></td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="card" id="materials">
+    <div class="card-head"><h2 class="h2">Materials</h2><span class="muted" style="font-size:14px">Reorder point = daily use × supplier lead time + safety stock</span></div>
+    <form method="post" action="/purchases/raise">
+    <div class="tbox"><table class="t" style="min-width:980px">
+      <thead><tr><th><span class="sr">Select</span></th><th>Material</th><th class="r">On hand</th><th class="r">On order</th><th class="r">Daily use</th><th class="r">Lead</th><th class="r">Reorder point</th><th class="r">Days left</th><th class="r">Order qty (EOQ)</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for r in mats %}
+        <tr>
+          <td>{% if r.status == 'Reorder' %}<input type="checkbox" name="material_id" value="{{ r.m.id }}" checked aria-label="Order {{ r.m.name }}">{% endif %}</td>
+          <td><div style="font-weight:500">{{ r.m.name }}</div><div class="muted" style="font-size:12px">{{ r.m.code }} · {{ r.m.supplier.name }}</div></td>
+          <td class="r num">{{ r.have | num(1) }} {{ r.m.unit }}</td><td class="r num">{{ r.on_order | num(1) }}</td>
+          <td class="r num">{{ r.rate | num(1) }}</td><td class="r num">{{ r.lead }} d</td><td class="r num">{{ r.rop | num(1) }}</td>
+          <td class="r num">{{ r.cover | num if r.cover is not none else '–' }}</td>
+          <td class="r num">{{ (r.suggest if r.status == 'Reorder' else r.eoq) | num }}</td>
+          <td><span class="status {{ 's-warn' if r.status != 'OK' else 's-ok' }}">{{ r.status }}</span></td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+    <div style="margin-top:18px"><button class="btn" type="submit">Raise purchase orders for ticked materials</button></div>
+    </form>
+  </div>
+</section>
+{% endblock %}

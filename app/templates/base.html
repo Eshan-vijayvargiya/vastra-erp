@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Vastra Mills ERP{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 4h12M6 20h12M8 4v16M16 4v16M8 8l8 3M8 12l8 3M8 16l8 1'/%3E%3C/svg%3E">
+</head>
+<body>
+{% set modules = [("Overview", "/"), ("Products", "/products"), ("Production", "/production"), ("Stock", "/stock"),
+                  ("Purchases", "/purchases"), ("Sales", "/sales"), ("Accounts", "/accounts"), ("Forecast", "/forecast")] %}
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="Vastra Mills home">{{ icon("spool", 20) }}Vastra</a>
+    <nav class="mods" aria-label="Modules">
+      {% for name, href in modules %}<a href="{{ href }}"{% if name == active %} aria-current="page"{% endif %}>{{ name }}</a>{% endfor %}
+    </nav>
+    <div class="nav-end">
+      <a href="/stock#materials" aria-label="Reorder alerts">{{ icon("bell", 17) }}</a>
+      <form class="inline" method="post" action="/logout"><button type="submit" aria-label="Sign out ({{ user.name if user else '' }})" title="Sign out"><span class="avatar">{{ ((user.name if user else 'VM')[:1] ~ ((user.name if user else 'VM').split(' ')[-1])[:1]) | upper }}</span></button></form>
+    </div>
+  </div>
+</header>
+{% block local %}
+<div class="local"><div class="wrap">
+  <div class="local-title">{{ active }}</div>
+  <div class="local-end">{% block local_end %}{% endblock %}</div>
+</div></div>
+{% endblock %}
+<main>
+  {% if flashes %}<div class="wrap">{% for f in flashes %}<div class="flash {{ 'err' if f.kind == 'err' else '' }}" role="status">{{ f.text }}</div>{% endfor %}</div>{% endif %}
+  {% block content %}{% endblock %}
+</main>
+<footer class="foot"><div class="wrap">
+  Vastra Mills is a demo company: customers, suppliers and numbers are generated. The demo date is {{ today | dmy }}.
+  {% block credits %}{% endblock %} Photos from Unsplash (see README for credits).
+</div></footer>
+</body>
+</html>

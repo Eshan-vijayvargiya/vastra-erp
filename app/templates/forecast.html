@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Vastra Mills · Forecast{% endblock %}
+{% block local_end %}
+<nav class="subnav" aria-label="Forecast sections"><a href="#chart" aria-current="page">Forecast</a><a href="#check">Accuracy</a><a href="#plan">Production plan</a><a href="#how">How it works</a></nav>
+{% endblock %}
+{% block content %}
+{% set this = fc.this_month %}
+<section class="wrap head">
+  <h1 class="h-xl" style="flex:1 1 520px">Forecast. <span class="muted">{{ fc.forecast.loc[this].sum() | lakh }} of orders expected in {{ this.strftime('%B') }}.</span></h1>
+  <p class="lede">A festival-calendar regression, trained on two years of daily orders. It knows Diwali moves every year, and it is checked against a plain “same month last year” guess.</p>
+</section>
+<section class="band" style="height:360px">
+  <img src="{{ url_for('static', path='img/fabric-rolls.jpg') }}" alt="Shelves of colourful patterned fabric rolls" style="object-position:center 45%">
+  <div class="chips"><div class="wrap">
+    {% for m in months %}<div class="glass"><div class="k">{{ m.strftime('%B') }}{{ ' (so far + rest)' if loop.first else '' }}</div><div class="v">{{ fc.forecast.loc[m].sum() | lakh }}</div></div>{% endfor %}
+  </div></div>
+</section>
+
+<section class="wrap stack section">
+  <div class="card" id="chart">
+    <div class="card-head" style="margin-bottom:18px"><h2 class="h2">Orders by month, with forecast</h2><span class="muted" style="font-size:14px">Hover a bar for the numbers</span></div>
+    {{ chart }}
+    <div class="tbox" style="margin-top:28px"><table class="t" style="min-width:860px">
+      <thead><tr><th>₹ lakh</th>{% for m in months %}<th class="r">{{ m.strftime('%b %Y') }}</th><th class="r muted">last year</th>{% endfor %}<th class="r">Typical miss</th></tr></thead>
+      <tbody>
+      {% for r in table %}
+        <tr class="{{ 'total' if r.cat == 'All' else '' }}"><td>{{ r.cat }}</td>
+        {% for i in range(months | length) %}<td class="r num" style="font-weight:600">{{ '%.1f' | format(r.fc[i] / 1e5) }}</td><td class="r num muted">{{ '%.1f' | format(r.ly[i] / 1e5) if r.ly[i] == r.ly[i] else '–' }}</td>{% endfor %}
+        <td class="r num muted">± {{ '%.1f' | format(r.spread / 1e5) }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="grid wide" id="check">
+    <div class="card">
+      <div class="card-head"><h2 class="h3">This month so far</h2><span class="muted" style="font-size:14px">{{ fc.mtd_days }} days of {{ this.strftime('%B') }}</span></div>
+      <p class="muted" style="margin:4px 0 14px;font-size:14px">Diwali falls on {{ dw_this | dmy }} this year but fell on {{ dw_last | dmy }} last year, so last year's same days are a poor guide for sarees. The calendar model knows the date.</p>
+      <div class="tbox"><table class="t">
+        <thead><tr><th>₹ lakh</th><th class="r">Actual</th><th class="r">Model</th><th class="r">Last year</th></tr></thead>
+        <tbody>
+        {% for cat, r in mtd.iterrows() %}
+          <tr><td>{{ cat }}</td><td class="r num" style="font-weight:600">{{ '%.2f' | format(r.actual / 1e5) }}</td>
+            <td class="r num {{ 'ok' if (r.model - r.actual) | abs < (r.last_year - r.actual) | abs else '' }}">{{ '%.2f' | format(r.model / 1e5) }}</td>
+            <td class="r num {{ 'ok' if (r.last_year - r.actual) | abs < (r.model - r.actual) | abs else '' }}">{{ '%.2f' | format(r.last_year / 1e5) }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table></div>
+      <p class="muted" style="font-size:12px;margin:10px 0 0">Green = the closer guess. Small categories swing a lot over {{ fc.mtd_days }} days, so read them with care.</p>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2 class="h3">Backtest</h2><span class="muted" style="font-size:14px">Error on months the model never saw (WAPE)</span></div>
+      <p class="muted" style="margin:4px 0 14px;font-size:14px">Four forecasts, made at the end of each month from {{ cutoffs[0].strftime('%b') }} to {{ cutoffs[-1].strftime('%b %Y') }}, each for the next three months. Lower is better.</p>
+      <div class="tbox"><table class="t">
+        <thead><tr><th>Category</th><th class="r">Model</th><th class="r">Last year</th></tr></thead>
+        <tbody>
+        {% for r in table %}
+          <tr class="{{ 'total' if r.cat == 'All' else '' }}"><td>{{ r.cat }}</td>
+            <td class="r num {{ 'ok' if r.acc.model < r.acc.naive else '' }}">{{ '%.0f' | format(r.acc.model) }}%</td>
+            <td class="r num {{ 'ok' if r.acc.naive < r.acc.model else '' }}">{{ '%.0f' | format(r.acc.naive) }}%</td></tr>
+        {% endfor %}
+        </tbody>
+      </table></div>
+      <p class="muted" style="font-size:12px;margin:10px 0 0">In months without a festival shift the two are close; with only two years of history, “last year” is a strong baseline. The model earns its place when the calendar moves.</p>
+    </div>
+  </div>
+
+  <div class="card" id="plan">
+    <div class="card-head"><h2 class="h2">Production plan, next 30 days</h2><span class="muted" style="font-size:14px">Make = forecast demand + safety stock + open orders − stock − work in progress</span></div>
+    <div class="tbox"><table class="t" style="min-width:820px">
+      <thead><tr><th>Product</th><th class="r">Forecast demand</th><th class="r">Open orders</th><th class="r">On hand</th><th class="r">Being made</th><th class="r">Make</th><th></th></tr></thead>
+      <tbody>
+      {% for r in make[:15] %}
+        <tr><td><a href="/products/{{ r.p.sku }}" style="color:var(--ink);font-weight:500">{{ r.p.name }}</a><div class="muted" style="font-size:12px">{{ r.p.category }}</div></td>
+          <td class="r num">{{ r.demand | num }}</td><td class="r num">{{ r.booked | num }}</td><td class="r num">{{ r.have | num }}</td><td class="r num">{{ r.wip | num }}</td>
+          <td class="r num" style="font-weight:600">{{ r.make | num }} {{ r.p.unit }}</td>
+          <td class="r"><form class="inline" method="post" action="/production/new"><input type="hidden" name="product_id" value="{{ r.p.id }}"><input type="hidden" name="qty" value="{{ r.make }}"><button class="btn sm" type="submit">Make</button></form></td></tr>
+      {% else %}<tr><td colspan="7" class="muted">Stock and work in progress cover the next 30 days.</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="card" id="how">
+    <h2 class="h2">How the forecast works</h2>
+    <div class="grid" style="margin-top:18px;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:22px">
+      <div><h3 style="font-size:17px">1 · Daily sales per category</h3><p class="muted" style="font-size:14px;line-height:1.55">Every order line is added up by day and category: two years, about 740 days each.</p></div>
+      <div><h3 style="font-size:17px">2 · Calendar features</h3><p class="muted" style="font-size:14px;line-height:1.55">Month of year, Sunday, and festival windows: days before Diwali (sarees, dhoti &amp; safi), before 26 Jan and 15 Aug (flags), and the wedding season.</p></div>
+      <div><h3 style="font-size:17px">3 · Ridge regression</h3><p class="muted" style="font-size:14px;line-height:1.55">Least squares with a small penalty so a dozen-plus weights can be learned safely. Older days are scaled up by year-on-year growth so the forecast is at today's level.</p></div>
+      <div><h3 style="font-size:17px">4 · What it learned</h3><p class="muted" style="font-size:14px;line-height:1.55">The last week before Diwali adds about {{ drivers.diwali | rupees }} a day of saree orders; the week before 26 Jan or 15 Aug adds {{ drivers.natday | rupees }} a day of flags; and a Sunday cuts fabric orders by about {{ (-drivers.sunday) | rupees }} a day.</p></div>
+    </div>
+  </div>
+</section>
+{% endblock %}

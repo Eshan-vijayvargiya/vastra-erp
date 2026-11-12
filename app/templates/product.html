@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Vastra Mills · {{ p.name }}{% endblock %}
+{% block local_end %}<a href="/products" style="font-size:13px">All products</a>{% endblock %}
+{% block content %}
+<section class="wrap section">
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;background:#fff;border-radius:28px;padding:40px">
+    <div style="flex:1 1 320px;min-width:0">
+      {% if p.photo %}<img src="{{ url_for('static', path='img/' ~ p.photo) }}" alt="{{ p.name }}" style="width:100%;height:420px;border-radius:22px;object-fit:cover">
+      {% else %}<div class="noimg" style="height:420px;border-radius:22px">{{ icon("grid", 48) }}</div>{% endif %}
+    </div>
+    <div style="flex:999 1 520px;min-width:0">
+      <div class="eyebrow">{{ p.category }} · {{ p.sku }}</div>
+      <h1 style="font-size:40px;line-height:1.1;letter-spacing:-0.03em;margin-top:6px">{{ p.name }}</h1>
+      <p class="muted" style="font-size:17px;margin:10px 0 0">Sells for {{ p.price | rupees }}{% if p.unit == 'm' %} a metre{% endif %}. Costs {{ cost | rupees }} to make (materials + labour), a margin of {{ '%.0f' | format(margin) }}%.</p>
+      <div class="grid" style="margin-top:24px;grid-template-columns:repeat(auto-fit,minmax(min(140px,100%),1fr));gap:12px">
+        <div class="tile" style="background:var(--bg);padding:18px 20px"><div class="k">On hand</div><div class="v" style="font-size:30px">{{ st.have | num }}</div><div class="s">{{ p.unit }}</div></div>
+        <div class="tile" style="background:var(--bg);padding:18px 20px"><div class="k">For open orders</div><div class="v" style="font-size:30px">{{ st.booked | num }}</div><div class="s">{{ p.unit }}</div></div>
+        <div class="tile" style="background:var(--bg);padding:18px 20px"><div class="k">Being made</div><div class="v" style="font-size:30px">{{ st.wip | num }}</div><div class="s">{{ p.unit }}</div></div>
+        <div class="tile" style="background:var(--bg);padding:18px 20px"><div class="k">Safety stock</div><div class="v" style="font-size:30px">{{ p.safety_stock | num }}</div><div class="s">{{ p.unit }}</div></div>
+      </div>
+      <h2 class="h3" style="margin-top:32px">Bill of materials <span class="muted" style="font-weight:500;font-size:15px">for one {{ 'metre' if p.unit == 'm' else 'piece' }}</span></h2>
+      <div class="tbox" style="margin-top:12px"><table class="t">
+        <thead><tr><th>Material</th><th class="r">Quantity</th><th class="r">Rate</th><th class="r">Cost</th></tr></thead>
+        <tbody>
+        {% for b in p.bom %}<tr><td>{{ b.material.name }}</td><td class="r num">{{ '%g' | format(b.qty) }} {{ b.material.unit }}</td><td class="r num">{{ '₹%g' | format(b.material.cost) }}</td><td class="r num">{{ '₹%.2f' | format(b.qty * b.material.cost) }}</td></tr>{% endfor %}
+        <tr><td>Labour (cutting, stitching, finishing)</td><td></td><td></td><td class="r num">{{ '₹%.2f' | format(p.labour_cost) }}</td></tr>
+        <tr class="total"><td>Cost to make</td><td></td><td></td><td class="r num">{{ '₹%.2f' | format(cost) }}</td></tr>
+        </tbody>
+      </table></div>
+      <form method="post" action="/production/new" style="display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin-top:24px">
+        <input type="hidden" name="product_id" value="{{ p.id }}">
+        <div class="field" style="width:160px"><label for="qty">Make quantity</label><input id="qty" name="qty" type="number" min="1" step="1" value="{{ p.batch_size }}"></div>
+        <button class="btn" type="submit">Create work order</button>
+      </form>
+    </div>
+  </div>
+</section>
+<section class="wrap grid wide" style="padding-bottom:32px">
+  <div class="card"><div class="card-head"><h2 class="h3">Sold per month</h2><span class="muted" style="font-size:14px">{{ year_units | num }} {{ p.unit }} in 12 months</span></div>{{ chart }}</div>
+  <div class="card"><div class="card-head"><h2 class="h3">Recent orders</h2></div>
+    <ul class="list">{% for l in recent %}
+      <li><div class="grow"><div class="t1">{{ l.order.customer.name }}</div><div class="t2">{{ l.order.number }} · {{ l.order.order_date | dmy }} · {{ l.qty | num }} {{ p.unit }}</div></div>
+      <span class="status {{ 's-ok' if l.order.status == 'Shipped' else 's-info' }}" style="font-size:13px">{{ l.order.status }}</span></li>
+    {% endfor %}</ul>
+  </div>
+</section>
+{% endblock %}

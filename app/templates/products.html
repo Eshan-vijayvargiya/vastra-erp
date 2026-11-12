@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Vastra Mills · Products{% endblock %}
+{% block local_end %}<a class="btn sm" href="/forecast#plan">{{ icon("plus", 14) }}Plan production</a>{% endblock %}
+{% block content %}
+<section class="wrap" style="padding:56px 22px 32px">
+  <h1 class="h-xl" style="max-width:900px">Products. <span class="muted">Everything Vastra makes, with what is on the shelf right now.</span></h1>
+</section>
+<nav class="wrap cats" aria-label="Categories">
+  <a href="/products"{% if not cat %} aria-current="page"{% endif %}><div class="noimg">{{ icon("grid", 30) }}</div><span>All</span></a>
+  {% for name, img in cats %}
+  <a href="/products?cat={{ name | urlencode }}"{% if cat == name %} aria-current="page"{% endif %}><img src="{{ url_for('static', path='img/' ~ img) }}" alt=""><span>{{ name }}</span></a>
+  {% endfor %}
+</nav>
+
+{% if not cat and season_x %}
+<section class="wrap" style="margin-top:32px">
+  <div style="display:flex;flex-wrap:wrap;background:#fff;border-radius:28px;overflow:hidden">
+    <div style="flex:1 1 520px;min-width:0;height:400px"><img src="{{ url_for('static', path='img/shirts-colour-rack.jpg') }}" alt="Shirts hanging on a rack" style="width:100%;height:100%;object-fit:cover"></div>
+    <div style="flex:1 1 360px;min-width:0;padding:48px;display:flex;flex-direction:column;justify-content:center;gap:14px">
+      <div style="font-size:14px;font-weight:600;color:var(--warn)">Plan ahead</div>
+      <h2 style="font-size:40px;line-height:1.1;letter-spacing:-0.03em">School season starts in March.</h2>
+      <p class="muted" style="margin:0;font-size:17px;line-height:1.5">Last year, uniform orders in April and May were {{ '%.1f' | format(season_x) }} times February's. Start cutting shirts in January so stock is ready.</p>
+      <a href="/forecast#plan" style="font-size:17px;display:inline-flex;align-items:center;gap:2px">See the production plan {{ icon("chev", 16) }}</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="wrap section">
+  <div class="card-head" style="margin-bottom:24px">
+    <h2 class="h2">{{ cat or "All products" }} <span class="muted" style="font-weight:500">· {{ total }}</span></h2>
+    <form method="get" action="/products" style="display:flex;align-items:center;gap:10px">
+      {% if cat %}<input type="hidden" name="cat" value="{{ cat }}">{% endif %}
+      <label for="sort" class="muted" style="font-size:14px">Sort by</label>
+      <select id="sort" name="sort" onchange="this.form.submit()" style="font:500 14px var(--font);border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px">
+        <option value="sales"{% if sort == 'sales' %} selected{% endif %}>Best selling</option>
+        <option value="stock"{% if sort == 'stock' %} selected{% endif %}>Lowest stock</option>
+        <option value="price"{% if sort == 'price' %} selected{% endif %}>Price</option>
+      </select>
+      <noscript><button class="btn sm grey" type="submit">Sort</button></noscript>
+    </form>
+  </div>
+  <div class="grid cards">
+    {% for r in rows %}{% set p = r.p %}{% set st = r.st %}
+    <a class="story pcard" href="/products/{{ p.sku }}">
+      {% if p.photo %}<img src="{{ url_for('static', path='img/' ~ p.photo) }}" alt="{{ p.name }}">{% else %}<div class="noimg" style="height:280px">{{ icon("grid", 40) }}</div>{% endif %}
+      <div class="t">
+        {% if st.status != 'OK' %}<div class="eb warn">{{ 'Low stock' if st.status == 'Low' else 'Short for open orders' }}</div>{% else %}<div class="eb muted">{{ p.category }} · {{ p.sku }}</div>{% endif %}
+        <div class="name">{{ p.name }}</div>
+        <div class="muted" style="font-size:14px">{{ r.sales | lakh }} sold in the last 12 months · margin {{ '%.0f' | format((p.price - r.cost) / p.price * 100) }}%</div>
+        <div class="row">
+          <span style="font-size:17px;font-weight:600">{{ p.price | rupees }}{% if p.unit == 'm' %} / m{% endif %}</span>
+          <span class="status {{ 's-ok' if st.status == 'OK' else 's-warn' }}" style="font-size:13px">{{ st.have | num }} {{ p.unit }}</span>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

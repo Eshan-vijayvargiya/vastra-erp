@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Vastra Mills · Overview{% endblock %}
+{% block local_end %}<a class="btn sm" href="/sales#new">{{ icon("plus", 14) }}New order</a>{% endblock %}
+{% block content %}
+<section class="wrap" style="padding-top:44px">
+  <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px">
+    <div>
+      <div class="eyebrow">{{ today.strftime('%A') }}, {{ today | dmy }}</div>
+      <h1 class="h-l" style="margin-top:4px">Today at the mill</h1>
+    </div>
+    <form class="search" method="get" action="/sales" role="search">{{ icon("search", 16) }}<input type="search" name="q" aria-label="Search orders and customers" placeholder="Search orders and customers"></form>
+  </div>
+  <div class="grid" style="margin-top:28px;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))">
+    {% for s in stories %}
+    <a class="story" href="{{ s.href }}">
+      <img src="{{ url_for('static', path='img/' ~ s.img) }}" alt="">
+      <div class="t"><div class="eb" style="color:{{ s.color }}">{{ s.eb }}</div><div class="tt">{{ s.text }}</div></div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="wrap" aria-label="Key numbers" style="margin-top:32px">
+  <div class="grid">
+    <div class="tile"><div class="k">Orders booked in {{ this.strftime('%B') }}</div><div class="v">{{ k.booked | lakh }}</div>
+      <div class="s">of {{ k.forecast_month | lakh }} forecast for the month</div>
+      <div class="bar" style="margin-top:6px"><span style="width:{{ k.booked_pct }}%"></span></div></div>
+    <div class="tile"><div class="k">Open orders</div><div class="v">{{ k.open_count }}</div><div class="s">worth {{ k.open_value | lakh }} · {{ k.due_week }} due within a week</div></div>
+    <div class="tile"><div class="k">Work orders running</div><div class="v">{{ k.wo_running }}</div><div class="s">on {{ k.wo_lines }} lines · {{ k.made_week | num }} units finished this week</div></div>
+    <div class="tile"><div class="k">To collect</div><div class="v">{{ k.receivable | lakh }}</div>
+      <div class="s"><span class="warn" style="display:inline-flex;align-items:center;gap:5px">{{ icon("alert", 14) }}{{ k.overdue | lakh }} overdue</span> from {{ k.late_customers }} customers</div></div>
+  </div>
+</section>
+
+<section class="wrap stack section">
+  <div class="card">
+    <div class="card-head" style="margin-bottom:20px">
+      <div><h2 class="h2">Sales by month</h2>
+      <p class="muted" style="margin:6px 0 0">Orders booked, by category. Uniforms peak when schools reopen, flags before 26 Jan and 15 Aug, sarees before Diwali. Hatched bars are the forecast (this month = booked so far + forecast for the remaining days).</p></div>
+      <a href="/forecast" style="font-size:14px;display:inline-flex;align-items:center;gap:2px">How the forecast works {{ icon("chev", 14) }}</a>
+    </div>
+    {{ chart }}
+  </div>
+
+  <div class="grid wide">
+    <div class="card">
+      <div class="card-head"><h2 class="h3">Reorder now</h2><span class="warn" style="font-size:14px;font-weight:500">{{ n_reorder }} below reorder point</span></div>
+      <ul class="list">
+        {% for r in mats %}
+        <li>
+          {% if r.m.photo %}<img class="thumb" src="{{ url_for('static', path='img/' ~ r.m.photo) }}" alt="">{% else %}<div class="thumb noimg">{{ icon("box", 24) }}</div>{% endif %}
+          <div class="grow">
+            <div class="t1">{{ r.m.name }} <span class="warn" style="font-weight:500;margin-left:6px">{{ r.have | num }} {{ r.m.unit }} left</span></div>
+            <div class="t2">Order {{ r.suggest | num }} {{ r.m.unit }} · {{ r.m.supplier.name }}</div>
+          </div>
+          <form class="inline" method="post" action="/purchases/raise"><input type="hidden" name="material_id" value="{{ r.m.id }}"><button class="linkbtn" type="submit">Raise PO {{ icon("chev", 14) }}</button></form>
+        </li>
+        {% else %}<li><span class="muted">Nothing to reorder today.</span></li>{% endfor %}
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2 class="h3">On the floor</h2><a href="/production" style="font-size:14px;display:inline-flex;align-items:center;gap:2px">All {{ n_wos }} work orders {{ icon("chev", 14) }}</a></div>
+      <ul class="list">
+        {% for w in wos %}
+        <li>
+          {% if w.product.photo %}<img class="thumb" src="{{ url_for('static', path='img/' ~ w.product.photo) }}" alt="">{% else %}<div class="thumb noimg">{{ icon("grid", 24) }}</div>{% endif %}
+          <div class="grow">
+            <div style="display:flex;justify-content:space-between;gap:12px"><span class="t1">{{ w.product.name }} × {{ w.qty | num }}</span><span class="muted">{{ w.progress }}%</span></div>
+            <div class="bar"><span style="width:{{ w.progress }}%"></span></div>
+            <div class="t2" style="margin:0">{{ w.number }} · {{ w.stage }} · due {{ w.due_date | dm }}</div>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2 class="h3">Latest open orders</h2><a href="/sales" style="font-size:14px;display:inline-flex;align-items:center;gap:2px">All {{ k.open_count }} open orders {{ icon("chev", 14) }}</a></div>
+    <div class="tbox"><table class="t" style="min-width:620px">
+      <thead><tr><th>Customer</th><th>Order</th><th>Due</th><th class="r">Amount</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for o in orders %}
+        <tr><td><b style="font-weight:600">{{ o.customer.name }}</b></td><td class="muted">{{ o.number }} · {{ o.order_date | dm }}</td>
+          <td>{{ o.due_date | dm }}</td><td class="r num"><b style="font-weight:600">{{ o.amount | rupees }}</b></td>
+          <td>{% if o.due_date < today %}<span class="status s-warn">Late</span>{% else %}<span class="status s-info">Open</span>{% endif %}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+</section>
+{% endblock %}

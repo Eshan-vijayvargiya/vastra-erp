@@ -1,0 +1,101 @@
+{
+ "license": "Unsplash License (free) - https://unsplash.com/license",
+ "photos": {
+  "hero-factory.jpg": {
+   "id": "photo-1636986056375-184676d8ca14",
+   "by": "Prince Prabhakaran",
+   "page": "https://unsplash.com/photos/a-large-room-with-rows-of-machines-and-spools-of-thread-pM2kkL8Vu9E"
+  },
+  "loom-workers.jpg": {
+   "id": "photo-1757852636019-711d501cc50c",
+   "by": "Ryo Harianto",
+   "page": "https://unsplash.com/photos/workers-operating-looms-in-a-textile-factory-4v4OIvj6dic"
+  },
+  "fabric-rolls.jpg": {
+   "id": "photo-1771098403201-8d0d32e2a062",
+   "by": "Bernd Dittrich",
+   "page": "https://unsplash.com/photos/stacks-of-colorful-patterned-fabric-rolls-on-shelves-mAktH366U_k"
+  },
+  "fabric-rolls-pattern.jpg": {
+   "id": "photo-1771098403201-58cdbbd1f03f",
+   "by": "Bernd Dittrich",
+   "page": "https://unsplash.com/photos/rolls-of-patterned-fabric-stacked-on-shelves-ZBUYjLVY0tc"
+  },
+  "saree-red.jpg": {
+   "id": "photo-1610030469983-98e550d6193c",
+   "by": "Bulbul Ahmed",
+   "page": "https://unsplash.com/photos/woman-in-red-and-brown-sari-xTrp1WOq2Do"
+  },
+  "saree-embroidered.jpg": {
+   "id": "photo-1787220272461-2c53528c9349",
+   "by": "Richard Williams",
+   "page": "https://unsplash.com/photos/embroidered-fabric-strips-with-floral-patterns-xLQEPpuonWY"
+  },
+  "school-shirt.jpg": {
+   "id": "photo-1603252109303-2751441dd157",
+   "by": "Nimble Made",
+   "page": "https://unsplash.com/s/photos/white-shirt"
+  },
+  "shirts-colour-rack.jpg": {
+   "id": "photo-1489987707025-afc232f7ea0f",
+   "by": "Parker Burchfield",
+   "page": "https://unsplash.com/s/photos/shirts-on-rack"
+  },
+  "navy-fabric.jpg": {
+   "id": "photo-1792740806021-e9e3c22528c4",
+   "by": "Tim Mossholder",
+   "page": "https://unsplash.com/photos/dark-blue-pleated-fabric-texture-91PGEPmwT60"
+  },
+  "flag-tricolour.jpg": {
+   "id": "photo-1597058712635-3182d1eacc1e",
+   "by": "Onkarphoto",
+   "page": "https://unsplash.com/photos/white-orange-and-green-striped-flag-dOsJ7YIFSqM"
+  },
+  "flag-sky.jpg": {
+   "id": "photo-1709545900940-f86b833d5704",
+   "by": "Saradasish Pradhan",
+   "page": "https://unsplash.com/photos/the-indian-flag-is-flying-high-in-the-blue-sky-OtolOiM9V0Q"
+  },
+  "white-textile.jpg": {
+   "id": "photo-1534639077088-d702bcf685e7",
+   "by": "Ethan Bodnar",
+   "page": "https://unsplash.com/photos/white-textile-lot-kgC99X3WH1w"
+  },
+  "thread-lot.jpg": {
+   "id": "photo-1574883140236-2e2cb0835792",
+   "by": "Eric Muhr",
+   "page": "https://unsplash.com/photos/thread-lot-EA0ppY9SZkA"
+  },
+  "spools-rack.jpg": {
+   "id": "photo-1782232191606-8e2523a3fe80",
+   "by": "CR",
+   "page": "https://unsplash.com/photos/numerous-white-thread-spools-arranged-on-a-blue-industrial-rack-vLYs3MeloVY"
+  },
+  "cotton.jpg": {
+   "id": "photo-1616431101491-554c0932ea40",
+   "by": "Ranurte",
+   "page": "https://unsplash.com/photos/cotton-stem-with-white-bolls-kSdi_gqbGGs"
+  },
+  "sewing-hands.jpg": {
+   "id": "photo-1773511237767-0e324389922a",
+   "by": "Phil Hearing",
+   "page": "https://unsplash.com/photos/hands-operating-a-sewing-machine-on-fabric-9m6eykr9_vU"
+  },
+  "fabric-shelves.jpg": {
+   "id": "photo-1662407439446-4dd84e32029f",
+   "by": "Matin Hosseini",
+   "page": "https://unsplash.com/photos/a-store-with-a-variety-of-clothes-AD_c988Vmzk"
+  },
+  "blue-shirts.jpg": {
+   "id": "photo-1792566370756-2bd1fe7d15a1",
+   "by": "AZUKI .V",
+   "page": "https://unsplash.com/photos/blue-shirts-hanging-on-hangers-FicoNs1EhcQ"
+  },
+  "spools-dark.jpg": {
+   "id": "photo-1517146783983-418c681b56c5",
+   "by": "Vishal Banik",
+   "page": "https://unsplash.com/photos/photo-of-assorted-color-thread-spool-lot-V6T99SnUCyA"
+  }
+ },
+ "note": "Files live in app/static/img/. Downloaded from Unsplash under the free Unsplash License; resized and compressed."
+}

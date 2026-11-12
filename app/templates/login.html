@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vastra Mills · Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+</head>
+<body>
+<header style="border-bottom:1px solid rgba(0,0,0,.08)">
+  <div class="wrap" style="height:48px;display:flex;align-items:center;justify-content:space-between">
+    <span class="brand">{{ icon("spool", 20) }}Vastra Mills</span>
+    <span class="muted" style="font-size:12.5px">Demo company</span>
+  </div>
+</header>
+<main class="wrap">
+  {% for f in flashes %}<div class="flash {{ 'err' if f.kind == 'err' else '' }}" role="status">{{ f.text }}</div>{% endfor %}
+  <section class="signin">
+    <div class="photo">
+      <img src="{{ url_for('static', path='img/hero-factory.jpg') }}" alt="Rows of spinning machines with white spools on a textile mill floor">
+      <div class="pill"><i></i><span><b>{{ running }} work orders</b> on the floor today</span></div>
+    </div>
+    <div class="panel">
+      <div>
+        <div style="font-size:17px;font-weight:600;color:var(--warn)">Vastra Mills ERP</div>
+        <h1 class="h-l" style="font-size:52px;margin-top:10px">Sign in to your mill.</h1>
+        <p class="muted" style="font-size:19px;line-height:1.45;margin:14px 0 0">Yarn, looms, orders and money. Every metre of fabric in one place.</p>
+      </div>
+      <form method="post" action="/login" style="display:flex;flex-direction:column;gap:16px">
+        <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="username" placeholder="owner@vastramills.in" required></div>
+        <div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required></div>
+        <button class="btn block" type="submit">Continue {{ icon("arrow", 18) }}</button>
+      </form>
+      <div class="or">or</div>
+      <form method="post" action="/demo"><button class="btn grey block" type="submit">Explore the demo company</button></form>
+      <p class="muted" style="margin:0;font-size:12px;line-height:1.5;display:flex;gap:8px">{{ icon("lock", 15) }}<span>Demo login: owner@vastramills.in / vastra-demo. All data is generated for a portfolio project.</span></p>
+    </div>
+  </section>
+  <section style="padding:24px 0 72px">
+    <h2 class="h-xl" style="text-align:center">From yarn to invoice.</h2>
+    <p class="muted" style="text-align:center;font-size:21px;margin:14px auto 0;max-width:620px">One system for what Vastra makes, what it buys and what it is owed.</p>
+    <div class="tiles4">
+      {% for img, title, text in tiles %}
+      <div class="story"><img src="{{ url_for('static', path='img/' ~ img) }}" alt="" style="height:300px"><div class="t"><div class="tt" style="margin:0">{{ title }}</div><div class="muted" style="margin-top:4px;font-size:15px">{{ text }}</div></div></div>
+      {% endfor %}
+    </div>
+  </section>
+</main>
+<footer class="foot"><div class="wrap">Vastra Mills is a demo company. Photos from Unsplash by Prince Prabhakaran, Nimble Made, Bulbul Ahmed, Onkarphoto and Bernd Dittrich.</div></footer>
+</body>
+</html>

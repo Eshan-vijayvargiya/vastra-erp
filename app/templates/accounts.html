@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Vastra Mills · Accounts{% endblock %}
+{% block local_end %}
+<nav class="subnav" aria-label="Account sections"><a href="#pl" aria-current="page">Profit and loss</a><a href="#collect">To collect</a><a href="#pay">To pay</a></nav>
+<a class="btn sm grey" href="/export">{{ icon("download", 14) }}Export for Power BI</a>
+{% endblock %}
+{% block content %}
+<section class="wrap head">
+  <h1 class="h-xl" style="flex:1 1 520px">Accounts. <span class="muted">{{ year['Net profit'] | lakh }} profit on {{ year['Sales'] | lakh }} of sales.</span></h1>
+  <p class="lede">Twelve closed months, {{ first.strftime('%b %Y') }} to {{ last.strftime('%b %Y') }}. Sales are invoices; costs are materials issued, labour on finished goods, and overheads.</p>
+</section>
+<section class="band" style="height:360px">
+  <img src="{{ url_for('static', path='img/sewing-hands.jpg') }}" alt="Hands guiding fabric through a sewing machine" style="object-position:center 50%">
+  <div class="chips"><div class="wrap">
+    <div class="glass"><div class="k">Gross margin</div><div class="v">{{ margin | num(1) }}%</div></div>
+    <div class="glass"><div class="k">Net margin</div><div class="v">{{ net_margin | num(1) }}%</div></div>
+    <div class="glass"><div class="k">To collect</div><div class="v">{{ rec.total | lakh }}</div></div>
+    <div class="glass"><div class="k">To pay</div><div class="v">{{ pay.total | lakh }}</div></div>
+  </div></div>
+</section>
+
+<section class="wrap stack section">
+  <div class="card" id="pl">
+    <div class="card-head" style="margin-bottom:18px"><h2 class="h2">Net profit by month</h2><span class="muted" style="font-size:14px">Thin months are when uniforms and festivals are quiet</span></div>
+    {{ chart }}
+    <div class="tbox" style="margin-top:28px"><table class="t" style="min-width:1080px">
+      <thead><tr><th>₹ lakh</th>{% for m in months %}<th class="r">{{ m }}</th>{% endfor %}<th class="r">12 months</th></tr></thead>
+      <tbody>
+      {% for name, vals, tot in table %}
+        <tr class="{{ 'total' if 'profit' in name else '' }}"><td>{{ name }}</td>
+        {% for v in vals %}<td class="r num {{ 'warn' if v < 0 else '' }}">{{ '%.1f' | format(v / 1e5) }}</td>{% endfor %}
+        <td class="r num" style="font-weight:600">{{ '%.1f' | format(tot / 1e5) }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="grid wide">
+    <div class="card" id="collect">
+      <div class="card-head"><h2 class="h3">To collect, by age</h2><span class="muted" style="font-size:14px">{{ rec.total | rupees }}</span></div>
+      {% set maxb = (rec.buckets.values() | max) or 1 %}
+      {% for name, amt in rec.buckets.items() %}
+      <div style="display:grid;grid-template-columns:150px 1fr 90px;gap:12px;align-items:center;margin:10px 0;font-size:14px">
+        <span>{{ name }}</span><div class="bar" style="height:10px;margin:0"><span style="width:{{ 100 * amt / maxb }}%;background:{{ '#86868b' if name == 'Not due' else 'var(--warn)' }}"></span></div>
+        <span class="r num" style="text-align:right;font-weight:600">{{ amt | lakh }}</span></div>
+      {% endfor %}
+      <ul class="list" style="margin-top:14px">
+        {% for inv, bal, late in rec.open[:6] if late > 0 %}
+        <li><div class="grow"><div class="t1">{{ inv.customer.name }}</div><div class="t2">{{ inv.number }} · <span class="warn">{{ late }} days late</span></div></div><span class="num" style="font-weight:600">{{ bal | rupees }}</span></li>
+        {% endfor %}
+      </ul>
+      <a href="/sales#invoices" style="font-size:14px;display:inline-flex;align-items:center;gap:2px;margin-top:10px">Record payments in Sales {{ icon("chev", 14) }}</a>
+    </div>
+    <div class="card" id="pay">
+      <div class="card-head"><h2 class="h3">To pay suppliers</h2><span class="muted" style="font-size:14px">{{ pay.total | rupees }}</span></div>
+      <ul class="list">
+        {% for po, bal, age in pay.rows[:8] %}
+        <li><div class="grow"><div class="t1">{{ po.supplier.name }}</div><div class="t2">{{ po.number }} · received {{ age }} days ago</div></div><span class="num" style="font-weight:600">{{ bal | rupees }}</span></li>
+        {% else %}<li class="muted">Nothing to pay.</li>{% endfor %}
+      </ul>
+      <a href="/purchases#payables" style="font-size:14px;display:inline-flex;align-items:center;gap:2px;margin-top:10px">Pay suppliers in Purchases {{ icon("chev", 14) }}</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

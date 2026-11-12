@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Vastra Mills · Export{% endblock %}
+{% block local %}<div class="local"><div class="wrap"><div class="local-title">Export for Power BI</div><div class="local-end"><a href="/accounts" style="font-size:13px">Back to Accounts</a></div></div></div>{% endblock %}
+{% block content %}
+<section class="wrap section">
+  <h1 class="h-l">Data for Power BI.</h1>
+  <p class="muted" style="font-size:17px;max-width:720px;line-height:1.5">Each file is one SQL view from <code>sql/views.sql</code>. In Power BI Desktop choose <b>Get data → Web</b> and paste a link below (the key lets Power BI read it without signing in). Refresh in Power BI to pull the latest numbers.</p>
+  <div class="card" style="margin-top:24px">
+    <ul class="list">
+      {% for name, what in views.items() %}
+      <li><div class="grow"><div class="t1">{{ name }}.csv</div><div class="t2">{{ what }}</div></div>
+        <code class="muted" style="font-size:12px;overflow-wrap:anywhere">{{ request.base_url }}export/{{ name }}.csv?key={{ key }}</code>
+        <a class="btn sm grey" href="/export/{{ name }}.csv">{{ icon("download", 14) }}CSV</a></li>
+      {% endfor %}
+      <li><div class="grow"><div class="t1">forecast.csv</div><div class="t2">Monthly actual and forecast by category (made in Python)</div></div>
+        <code class="muted" style="font-size:12px;overflow-wrap:anywhere">{{ request.base_url }}export/forecast.csv?key={{ key }}</code>
+        <a class="btn sm grey" href="/export/forecast.csv">{{ icon("download", 14) }}CSV</a></li>
+    </ul>
+  </div>
+</section>
+{% endblock %}
