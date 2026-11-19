@@ -3,7 +3,7 @@
 {% block local %}{% endblock %}
 {% block content %}
 <section class="hero">
-  <img src="{{ url_for('static', path='img/hero-factory.jpg') }}" alt="Rows of spinning machines with white spools on the mill floor">
+  <img decoding="async" src="{{ url_for('static', path='img/hero-factory.jpg') }}" alt="Rows of spinning machines with white spools on the mill floor">
   <div class="wrap">
     <div class="eyebrow" style="color:rgba(255,255,255,.8)">{{ today.strftime('%A') }}, {{ today | dmy }}</div>
     <h1 style="margin-top:10px">
@@ -31,7 +31,7 @@
   <div class="mod-grid" style="margin-top:36px">
     {% for name, href, img, big, small in tiles %}
     <a class="mod-card" href="{{ href }}">
-      <img src="{{ url_for('static', path='img/' ~ img) }}" alt="" loading="lazy">
+      <img decoding="async" src="{{ url_for('static', path='img/' ~ img) }}" alt="" loading="lazy">
       <div class="t">
         <div class="k">{{ name }}</div>
         <div class="n"><span>{{ big }}</span><span class="go">{{ icon("arrow", 16) }}</span></div>
@@ -75,7 +75,7 @@
   <div class="carousel" id="cat-track" style="margin-top:28px">
     {% for c in cats %}
     <a class="mod-card" href="/products?cat={{ c.name | urlencode }}" style="height:440px">
-      <img src="{{ url_for('static', path='img/' ~ c.img) }}" alt="{{ c.name }}" loading="lazy">
+      <img decoding="async" src="{{ url_for('static', path='img/' ~ c.img) }}" alt="{{ c.name }}" loading="lazy">
       <div class="t" style="padding:28px">
         <div class="k">{{ c.n }} products · {{ c.sales | lakh }} in 12 months</div>
         <div class="n" style="font-size:34px"><span>{{ c.name }}</span><span class="go">{{ icon("arrow", 16) }}</span></div>

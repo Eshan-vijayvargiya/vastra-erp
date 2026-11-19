@@ -10,7 +10,7 @@
   <p class="lede">A festival-calendar regression, trained on two years of daily orders. It knows Diwali moves every year, and it is checked against a plain “same month last year” guess.</p>
 </section>
 <section class="band" style="height:360px">
-  <img src="{{ url_for('static', path='img/fabric-rolls.jpg') }}" alt="Shelves of colourful patterned fabric rolls" style="object-position:center 45%">
+  <img decoding="async" src="{{ url_for('static', path='img/fabric-rolls.jpg') }}" alt="Shelves of colourful patterned fabric rolls" style="object-position:center 45%">
   <div class="chips"><div class="wrap">
     {% for m in months %}<div class="glass"><div class="k">{{ m.strftime('%B') }}{{ ' (so far + rest)' if loop.first else '' }}</div><div class="v">{{ fc.forecast.loc[m].sum() | lakh }}</div></div>{% endfor %}
   </div></div>

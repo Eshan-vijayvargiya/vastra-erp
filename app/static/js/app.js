@@ -53,15 +53,15 @@
   });
   $$(".bar").forEach((b) => grow.observe(b));
 
-  /* 4 · header photos drift slower than the page (parallax) */
-  const para = $$(".band img, .hero > img");
+  /* 4 · header photos drift slower than the page (parallax); one write per frame, only while on screen */
+  const para = $$(".band img");
   if (para.length && !reduce) {
     let ticking = false;
     const move = () => {
       para.forEach((img) => {
         const r = img.parentElement.getBoundingClientRect();
         if (r.bottom < 0 || r.top > innerHeight) return;
-        img.style.setProperty("--py", `${(r.top * -0.18).toFixed(1)}px`);
+        img.style.setProperty("--py", `${Math.round(r.top * -0.18)}px`);
       });
       ticking = false;
     };
@@ -73,15 +73,21 @@
   const fine = matchMedia("(hover: hover) and (pointer: fine)").matches;
   if (fine && !reduce) {
     $$(".story, .tile, .mod-card").forEach((card) => {
-      const tilt = card.matches(".story, .mod-card, .tile");
-      card.addEventListener("mousemove", (ev) => {
+      let ev = null, raf = 0;
+      const paint = () => {               // at most one update per frame, however fast the mouse moves
+        raf = 0;
+        if (!ev) return;
         const r = card.getBoundingClientRect(), x = (ev.clientX - r.left) / r.width, y = (ev.clientY - r.top) / r.height;
-        card.style.setProperty("--mx", `${x * 100}%`);
-        card.style.setProperty("--my", `${y * 100}%`);
-        if (tilt) card.style.transform =
-          `perspective(900px) rotateX(${((0.5 - y) * 7).toFixed(2)}deg) rotateY(${((x - 0.5) * 9).toFixed(2)}deg) translateY(-4px)`;
+        card.style.setProperty("--mx", `${Math.round(x * 100)}%`);
+        card.style.setProperty("--my", `${Math.round(y * 100)}%`);
+        card.style.transform =
+          `perspective(900px) rotateX(${((0.5 - y) * 7).toFixed(1)}deg) rotateY(${((x - 0.5) * 9).toFixed(1)}deg) translateY(-4px)`;
+      };
+      card.addEventListener("mousemove", (e) => {
+        ev = e;
+        if (!raf) raf = requestAnimationFrame(paint);
       });
-      card.addEventListener("mouseleave", () => { card.style.transform = ""; });
+      card.addEventListener("mouseleave", () => { ev = null; card.style.transform = ""; });
     });
   }
 

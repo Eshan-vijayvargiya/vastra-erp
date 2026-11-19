@@ -10,7 +10,7 @@
   <p class="lede">Twelve closed months, {{ first.strftime('%b %Y') }} to {{ last.strftime('%b %Y') }}. Sales are invoices; costs are materials issued, labour on finished goods, and overheads.</p>
 </section>
 <section class="band" style="height:360px">
-  <img src="{{ url_for('static', path='img/sewing-hands.jpg') }}" alt="Hands guiding fabric through a sewing machine" style="object-position:center 50%">
+  <img decoding="async" src="{{ url_for('static', path='img/sewing-hands.jpg') }}" alt="Hands guiding fabric through a sewing machine" style="object-position:center 50%">
   <div class="chips"><div class="wrap">
     <div class="glass"><div class="k">Gross margin</div><div class="v">{{ margin | num(1) }}%</div></div>
     <div class="glass"><div class="k">Net margin</div><div class="v">{{ net_margin | num(1) }}%</div></div>

@@ -8,14 +8,14 @@
 <nav class="wrap cats" aria-label="Categories">
   <a href="/products"{% if not cat %} aria-current="page"{% endif %}><div class="noimg">{{ icon("grid", 30) }}</div><span>All</span></a>
   {% for name, img in cats %}
-  <a href="/products?cat={{ name | urlencode }}"{% if cat == name %} aria-current="page"{% endif %}><img src="{{ url_for('static', path='img/' ~ img) }}" alt=""><span>{{ name }}</span></a>
+  <a href="/products?cat={{ name | urlencode }}"{% if cat == name %} aria-current="page"{% endif %}><img decoding="async" src="{{ url_for('static', path='img/' ~ img) }}" alt=""><span>{{ name }}</span></a>
   {% endfor %}
 </nav>
 
 {% if not cat and season_x %}
 <section class="wrap" style="margin-top:32px">
   <div style="display:flex;flex-wrap:wrap;background:#fff;border-radius:28px;overflow:hidden">
-    <div style="flex:1 1 520px;min-width:0;height:400px"><img src="{{ url_for('static', path='img/shirts-colour-rack.jpg') }}" alt="Shirts hanging on a rack" style="width:100%;height:100%;object-fit:cover"></div>
+    <div style="flex:1 1 520px;min-width:0;height:400px"><img decoding="async" src="{{ url_for('static', path='img/shirts-colour-rack.jpg') }}" alt="Shirts hanging on a rack" style="width:100%;height:100%;object-fit:cover"></div>
     <div style="flex:1 1 360px;min-width:0;padding:48px;display:flex;flex-direction:column;justify-content:center;gap:14px">
       <div style="font-size:14px;font-weight:600;color:var(--warn)">Plan ahead</div>
       <h2 style="font-size:40px;line-height:1.1;letter-spacing:-0.03em">School season starts in March.</h2>
@@ -43,7 +43,7 @@
   <div class="grid cards">
     {% for r in rows %}{% set p = r.p %}{% set st = r.st %}
     <a class="story pcard" href="/products/{{ p.sku }}">
-      {% if p.photo %}<img src="{{ url_for('static', path='img/' ~ p.photo) }}" alt="{{ p.name }}">{% else %}<div class="noimg" style="height:280px">{{ icon("grid", 40) }}</div>{% endif %}
+      {% if p.photo %}<img loading="lazy" decoding="async" src="{{ url_for('static', path='img/' ~ p.photo) }}" alt="{{ p.name }}">{% else %}<div class="noimg" style="height:280px">{{ icon("grid", 40) }}</div>{% endif %}
       <div class="t">
         {% if st.status != 'OK' %}<div class="eb warn">{{ 'Low stock' if st.status == 'Low' else 'Short for open orders' }}</div>{% else %}<div class="eb muted">{{ p.category }} · {{ p.sku }}</div>{% endif %}
         <div class="name">{{ p.name }}</div>

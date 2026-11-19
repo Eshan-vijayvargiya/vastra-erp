@@ -10,7 +10,7 @@
   <p class="lede">An order ships when finished stock covers every line. Shipping writes the invoice; the customer's credit days set the due date.</p>
 </section>
 <section class="band">
-  <img src="{{ url_for('static', path='img/shirts-colour-rack.jpg') }}" alt="Shirts in many colours on a rack" style="object-position:center 40%">
+  <img decoding="async" src="{{ url_for('static', path='img/shirts-colour-rack.jpg') }}" alt="Shirts in many colours on a rack" style="object-position:center 40%">
   <div class="chips"><div class="wrap">
     <div class="glass"><div class="k">Days from order to ship</div><div class="v">{{ avg_days | num(1) }}</div></div>
     <div class="glass"><div class="k">Shipped on time, 90 days</div><div class="v">{{ on_time | num }}%</div></div>

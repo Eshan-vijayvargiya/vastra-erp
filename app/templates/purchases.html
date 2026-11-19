@@ -9,7 +9,7 @@
   <p class="lede">Order quantities use the economic order quantity (EOQ): big enough to save on ordering, small enough not to tie up cash in stock.</p>
 </section>
 <section class="band">
-  <img src="{{ url_for('static', path='img/thread-lot.jpg') }}" alt="Cones of cotton thread in many colours" style="object-position:center 55%">
+  <img decoding="async" src="{{ url_for('static', path='img/thread-lot.jpg') }}" alt="Cones of cotton thread in many colours" style="object-position:center 55%">
   <div class="chips"><div class="wrap">
     <div class="glass"><div class="k">Bought, last 12 months</div><div class="v">{{ spend | lakh }}</div></div>
     <div class="glass"><div class="k">On the way</div><div class="v">{{ open_pos | length }} POs</div></div>
@@ -28,7 +28,7 @@
         {% for r in rows %}
         <li>
           <input type="checkbox" name="material_id" value="{{ r.m.id }}" checked aria-label="Order {{ r.m.name }}" style="width:18px;height:18px">
-          {% if r.m.photo %}<img class="thumb" src="{{ url_for('static', path='img/' ~ r.m.photo) }}" alt="">{% else %}<div class="thumb noimg">{{ icon("box", 24) }}</div>{% endif %}
+          {% if r.m.photo %}<img loading="lazy" decoding="async" class="thumb" src="{{ url_for('static', path='img/' ~ r.m.photo) }}" alt="">{% else %}<div class="thumb noimg">{{ icon("box", 24) }}</div>{% endif %}
           <div class="grow"><div class="t1">{{ r.m.name }} <span class="warn" style="font-weight:500;margin-left:6px">{{ r.have | num(1) }} {{ r.m.unit }} left</span></div>
             <div class="t2">Uses {{ r.rate | num(1) }} {{ r.m.unit }} a day · reorder point {{ r.rop | num(1) }} · order {{ r.suggest | num(1) }} {{ r.m.unit }} ({{ (r.suggest * r.m.cost) | rupees }})</div></div>
         </li>

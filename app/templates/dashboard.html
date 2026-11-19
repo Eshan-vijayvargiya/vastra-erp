@@ -13,7 +13,7 @@
   <div class="grid" style="margin-top:28px;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))">
     {% for s in stories %}
     <a class="story" href="{{ s.href }}">
-      <img src="{{ url_for('static', path='img/' ~ s.img) }}" alt="">
+      <img loading="lazy" decoding="async" src="{{ url_for('static', path='img/' ~ s.img) }}" alt="">
       <div class="t"><div class="eb" style="color:{{ s.color }}">{{ s.eb }}</div><div class="tt">{{ s.text }}</div></div>
     </a>
     {% endfor %}
@@ -48,7 +48,7 @@
       <ul class="list">
         {% for r in mats %}
         <li>
-          {% if r.m.photo %}<img class="thumb" src="{{ url_for('static', path='img/' ~ r.m.photo) }}" alt="">{% else %}<div class="thumb noimg">{{ icon("box", 24) }}</div>{% endif %}
+          {% if r.m.photo %}<img loading="lazy" decoding="async" class="thumb" src="{{ url_for('static', path='img/' ~ r.m.photo) }}" alt="">{% else %}<div class="thumb noimg">{{ icon("box", 24) }}</div>{% endif %}
           <div class="grow">
             <div class="t1">{{ r.m.name }} <span class="warn" style="font-weight:500;margin-left:6px">{{ r.have | num }} {{ r.m.unit }} left</span></div>
             <div class="t2">Order {{ r.suggest | num }} {{ r.m.unit }} · {{ r.m.supplier.name }}</div>
@@ -63,7 +63,7 @@
       <ul class="list">
         {% for w in wos %}
         <li>
-          {% if w.product.photo %}<img class="thumb" src="{{ url_for('static', path='img/' ~ w.product.photo) }}" alt="">{% else %}<div class="thumb noimg">{{ icon("grid", 24) }}</div>{% endif %}
+          {% if w.product.photo %}<img loading="lazy" decoding="async" class="thumb" src="{{ url_for('static', path='img/' ~ w.product.photo) }}" alt="">{% else %}<div class="thumb noimg">{{ icon("grid", 24) }}</div>{% endif %}
           <div class="grow">
             <div style="display:flex;justify-content:space-between;gap:12px"><span class="t1">{{ w.product.name }} × {{ w.qty | num }}</span><span class="muted">{{ w.progress }}%</span></div>
             <div class="bar"><span style="width:{{ w.progress }}%"></span></div>

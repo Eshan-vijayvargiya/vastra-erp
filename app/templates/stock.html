@@ -10,7 +10,7 @@
   <p class="lede">Every number here is the sum of the stock ledger: purchases in, materials issued to work orders, finished goods made and sold.</p>
 </section>
 <section class="band">
-  <img src="{{ url_for('static', path='img/fabric-shelves.jpg') }}" alt="Shelves stacked with fabric and clothes" style="object-position:center 40%">
+  <img decoding="async" src="{{ url_for('static', path='img/fabric-shelves.jpg') }}" alt="Shelves stacked with fabric and clothes" style="object-position:center 40%">
   <div class="chips"><div class="wrap">
     <div class="glass"><div class="k">Finished goods</div><div class="v">{{ goods_value | lakh }}</div></div>
     <div class="glass"><div class="k">Materials</div><div class="v">{{ mat_value | lakh }}</div></div>
