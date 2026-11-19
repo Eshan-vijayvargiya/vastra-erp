@@ -20,7 +20,7 @@ from app.models import Invoice, Material, Product, PurchaseOrder, SalesOrder, St
 from app.services import forecast, metrics, ops  # noqa: E402
 
 TODAY = date(2026, 11, 12)
-PAGES = ["/", "/products", "/products?cat=Sarees", "/products/U02", "/production", "/stock", "/purchases",
+PAGES = ["/home", "/", "/products", "/products?cat=Sarees", "/products/U02", "/production", "/stock", "/purchases",
          "/sales", "/sales?q=school", "/accounts", "/forecast", "/export"]
 
 
@@ -44,7 +44,7 @@ def test_wrong_password_is_refused(client):
         r = anon.post("/login", data={"email": "owner@vastramills.in", "password": "nope"}, follow_redirects=True)
         assert "match. Try the demo login" in r.text
         r = anon.post("/login", data={"email": "owner@vastramills.in", "password": "vastra-demo"}, follow_redirects=True)
-        assert "Today at the mill" in r.text
+        assert "The whole mill" in r.text
 
 
 @pytest.mark.parametrize("path", PAGES)
@@ -133,6 +133,7 @@ def test_post_actions_through_pages(client):
     wo_id = db.scalar(select(WorkOrder.id).where(WorkOrder.stage == "Cutting").limit(1))
     r = client.post(f"/production/{wo_id}/advance", follow_redirects=True)
     assert r.status_code == 200 and "moved to Stitching" in r.text
+    assert "app.js" in client.get("/home").text
     mat = [x for x in metrics.material_status(db, TODAY) if x["status"] == "Reorder"]
     if mat:
         r = client.post("/purchases/raise", data={"material_id": [str(mat[0]["m"].id)]}, follow_redirects=True)

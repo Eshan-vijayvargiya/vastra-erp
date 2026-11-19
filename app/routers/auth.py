@@ -19,7 +19,7 @@ TILES = [("school-shirt.jpg", "Uniforms", "Shirts, trousers and tunics for schoo
 @router.get("/login")
 def login_page(request: Request, db: Session = Depends(get_db)):
     if request.session.get("user"):
-        return RedirectResponse("/", status_code=303)
+        return RedirectResponse("/home", status_code=303)
     running = db.scalar(select(func.count()).select_from(WorkOrder).where(WorkOrder.stage.not_in(["Planned", "Packed"])))
     return render(request, "login.html", running=running, tiles=TILES)
 
@@ -31,14 +31,14 @@ def login(request: Request, email: str = Form(...), password: str = Form(...), d
         flash(request, "That email and password don't match. Try the demo login below the form.", "err")
         return RedirectResponse("/login", status_code=303)
     request.session["user"] = {"id": user.id, "name": user.name}
-    return RedirectResponse("/", status_code=303)
+    return RedirectResponse("/home", status_code=303)
 
 
 @router.post("/demo")
 def demo(request: Request, db: Session = Depends(get_db)):
     user = db.scalar(select(User).order_by(User.id))
     request.session["user"] = {"id": user.id, "name": user.name}
-    return RedirectResponse("/", status_code=303)
+    return RedirectResponse("/home", status_code=303)
 
 
 @router.post("/logout")

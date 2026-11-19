@@ -2,13 +2,15 @@
 
 A working ERP (enterprise resource planning) system for a small textile mill that makes **school uniforms, sarees, national flags, dhoti & safi, and fabric sold by the metre**. Built with **FastAPI + Jinja web pages + SQLAlchemy**, with two years of simulated business history, a **festival-aware demand forecast**, reorder points with **EOQ**, and CSV feeds for **Power BI**.
 
+**Live demo:** https://vastra-erp-0rhf.onrender.com (click *Explore the demo company*; the free server sleeps when idle, so the first load can take about 50 seconds)
+
 Vastra Mills is a demo company. Every customer, supplier and number is generated.
 
-![Dashboard](docs/screens/dashboard.jpg)
+![Home](docs/screens/home.jpg)
 
-| Sign-in | Production board |
+| Overview dashboard | Production board |
 |---|---|
-| ![Sign-in](docs/screens/signin.jpg) | ![Production](docs/screens/production.jpg) |
+| ![Dashboard](docs/screens/dashboard.jpg) | ![Production](docs/screens/production.jpg) |
 | **Forecast** | **Products** |
 | ![Forecast](docs/screens/forecast.jpg) | ![Products](docs/screens/products.jpg) |
 
@@ -26,6 +28,7 @@ This app puts stock, production, purchasing, sales and money in one place, and a
 
 | Module | What you can do | The logic behind it |
 |---|---|---|
+| **Home** | Full-screen mill photo, live numbers, a photo card for every module, the festival calendar ahead, category carousel | Numbers and calendar text are computed from the data and the forecast |
 | **Overview** | See today's work, key numbers, sales chart with forecast, what to reorder | All numbers are computed live from the transaction tables |
 | **Products** | Browse 38 products with photos, stock, margin; open a product for its bill of materials | Unit cost = materials from the BOM + labour |
 | **Production** | Work-order board (Planned → Cutting → Stitching → Finishing → Packed); create work orders | Starting a work order **issues materials** from stock; packing it **adds finished goods** |
@@ -93,8 +96,9 @@ app/
     ops.py           business actions: start/advance work orders, ship, invoice, receive, pay
     charts.py        server-side HTML charts (no JS library), colour-blind-safe palette
   routers/           one file per module
-  templates/         Jinja pages, light grey Apple-style design
-  static/            CSS and photos
+  templates/         Jinja pages, Apple-style design with glass cards
+  static/            CSS, photos, and app.js (scroll reveal, counting numbers, growing charts,
+                     parallax photos, 3D tilt, button ripple, background switcher)
 sql/views.sql        analytics views (run on SQLite and Postgres)
 tests/test_app.py    22 tests: pages, stock ledger, actions, forecast, exports
 docs/POWERBI_GUIDE.md  step-by-step Power BI build

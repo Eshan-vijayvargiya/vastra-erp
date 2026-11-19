@@ -6,19 +6,33 @@
 <title>{% block title %}Vastra Mills ERP{% endblock %}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>/* before paint: turn on effects and restore the chosen background */
+document.documentElement.classList.add("js");
+try { var bg = localStorage.getItem("vastra-bg"); if (bg) document.documentElement.dataset.bg = bg; } catch (e) {}</script>
 <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+<script src="{{ url_for('static', path='js/app.js') }}" defer></script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 4h12M6 20h12M8 4v16M16 4v16M8 8l8 3M8 12l8 3M8 16l8 1'/%3E%3C/svg%3E">
 </head>
 <body>
-{% set modules = [("Overview", "/"), ("Products", "/products"), ("Production", "/production"), ("Stock", "/stock"),
+{% set modules = [("Home", "/home"), ("Overview", "/"), ("Products", "/products"), ("Production", "/production"), ("Stock", "/stock"),
                   ("Purchases", "/purchases"), ("Sales", "/sales"), ("Accounts", "/accounts"), ("Forecast", "/forecast")] %}
 <header class="nav">
   <div class="wrap">
-    <a class="brand" href="/" aria-label="Vastra Mills home">{{ icon("spool", 20) }}Vastra</a>
+    <a class="brand" href="/home" aria-label="Vastra Mills home">{{ icon("spool", 20) }}Vastra</a>
     <nav class="mods" aria-label="Modules">
       {% for name, href in modules %}<a href="{{ href }}"{% if name == active %} aria-current="page"{% endif %}>{{ name }}</a>{% endfor %}
     </nav>
     <div class="nav-end">
+      <details class="bgpick">
+        <summary aria-label="Change background" title="Background">{{ icon("drop", 17) }}</summary>
+        <div class="bgmenu">
+          <div class="ttl">Background</div>
+          <button type="button" data-bg="glow"><i style="background:radial-gradient(circle at 25% 25%,#9cc9ff,transparent 60%),radial-gradient(circle at 80% 30%,#ffc48f,transparent 60%),radial-gradient(circle at 60% 85%,#9fe8cf,transparent 60%),#eef0f4"></i>Soft glow</button>
+          <button type="button" data-bg="photo"><i style="background:url('{{ url_for('static', path='img/hero-factory.jpg') }}') center/cover;filter:blur(1.5px)"></i>Mill photo</button>
+          <button type="button" data-bg="gradient"><i style="background:linear-gradient(160deg,#e3edff,#f1ecff,#fff1e4)"></i>Gradient</button>
+          <button type="button" data-bg="plain"><i style="background:#f0f0f3"></i>Plain grey</button>
+        </div>
+      </details>
       <a href="/stock#materials" aria-label="Reorder alerts">{{ icon("bell", 17) }}</a>
       <form class="inline" method="post" action="/logout"><button type="submit" aria-label="Sign out ({{ user.name if user else '' }})" title="Sign out"><span class="avatar">{{ ((user.name if user else 'VM')[:1] ~ ((user.name if user else 'VM').split(' ')[-1])[:1]) | upper }}</span></button></form>
     </div>

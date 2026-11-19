@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Vastra Mills · Home{% endblock %}
+{% block local %}{% endblock %}
+{% block content %}
+<section class="hero">
+  <img src="{{ url_for('static', path='img/hero-factory.jpg') }}" alt="Rows of spinning machines with white spools on the mill floor">
+  <div class="wrap">
+    <div class="eyebrow" style="color:rgba(255,255,255,.8)">{{ today.strftime('%A') }}, {{ today | dmy }}</div>
+    <h1 style="margin-top:10px">
+      {% for w in headline %}<span class="w" style="animation-delay:{{ loop.index0 * 120 }}ms">{{ w }}</span> {% endfor %}<br>
+      {% for w in subline %}<span class="w" style="animation-delay:{{ 300 + loop.index0 * 110 }}ms;color:rgba(255,255,255,.72)">{{ w }}</span> {% endfor %}
+    </h1>
+    <p>Uniforms, sarees, flags, dhoti and fabric by the metre. Made, stocked, sold and forecast in one place.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:28px">
+      <a class="btn lg" href="/">Open today's overview {{ icon("arrow", 18) }}</a>
+      <a class="btn grey lg" href="/forecast">See the forecast</a>
+    </div>
+    <div class="chips">
+      <div class="chip"><div class="k">Orders booked in {{ this.strftime('%B') }}</div><div class="v">{{ k.booked | lakh }}</div></div>
+      <div class="chip"><div class="k">Forecast for the month</div><div class="v">{{ k.forecast_month | lakh }}</div></div>
+      <div class="chip"><div class="k">Work orders running</div><div class="v">{{ k.wo_running }}</div></div>
+      <div class="chip"><div class="k">To collect</div><div class="v">{{ k.receivable | lakh }}</div></div>
+    </div>
+  </div>
+  <div class="scroll-cue" aria-hidden="true"></div>
+</section>
+
+<section class="wrap" style="padding-top:80px">
+  <div class="eyebrow">Everything in one place</div>
+  <h2 class="h-xl" style="margin-top:6px">The whole mill, <span class="grad-text">one tap away.</span></h2>
+  <div class="mod-grid" style="margin-top:36px">
+    {% for name, href, img, big, small in tiles %}
+    <a class="mod-card" href="{{ href }}">
+      <img src="{{ url_for('static', path='img/' ~ img) }}" alt="" loading="lazy">
+      <div class="t">
+        <div class="k">{{ name }}</div>
+        <div class="n"><span>{{ big }}</span><span class="go">{{ icon("arrow", 16) }}</span></div>
+        <div class="s">{{ small }}</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:96px">
+  <div class="eyebrow">What the calendar brings</div>
+  <h2 class="h-xl" style="margin-top:6px">Plan before <span class="grad-text">the rush.</span></h2>
+  <p class="lede" style="max-width:640px;margin-top:12px">Demand here follows the calendar. The forecast learns these dates, so production can start weeks ahead.</p>
+  <div class="card" style="margin-top:32px;padding:36px 34px">
+    <div class="timeline">
+      {% for e in events %}
+      <div class="ev">
+        <span class="dot" style="border-color:{{ e.color }};color:{{ e.color }}"></span>
+        <div class="muted" style="font-size:13px;font-weight:600">{{ e.label }}</div>
+        <h3 style="font-size:21px;margin-top:4px">{{ e.title }}</h3>
+        <p class="muted" style="font-size:14px;line-height:1.5;margin:6px 0 10px">{{ e.text }}</p>
+        <a href="/products?cat={{ e.cat | urlencode }}" style="font-size:14px;display:inline-flex;align-items:center;gap:2px">{{ e.cat }} {{ icon("chev", 14) }}</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:96px">
+  <div class="wrap" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px">
+    <div>
+      <div class="eyebrow">What we make</div>
+      <h2 class="h-xl" style="margin-top:6px">Five ranges. <span class="muted">One mill.</span></h2>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="car-btn prev" type="button" data-carousel="cat-track" aria-label="Previous category">{{ icon("arrow", 18) }}</button>
+      <button class="car-btn" type="button" data-carousel="cat-track" aria-label="Next category">{{ icon("arrow", 18) }}</button>
+    </div>
+  </div>
+  <div class="carousel" id="cat-track" style="margin-top:28px">
+    {% for c in cats %}
+    <a class="mod-card" href="/products?cat={{ c.name | urlencode }}" style="height:440px">
+      <img src="{{ url_for('static', path='img/' ~ c.img) }}" alt="{{ c.name }}" loading="lazy">
+      <div class="t" style="padding:28px">
+        <div class="k">{{ c.n }} products · {{ c.sales | lakh }} in 12 months</div>
+        <div class="n" style="font-size:34px"><span>{{ c.name }}</span><span class="go">{{ icon("arrow", 16) }}</span></div>
+        <div class="s" style="max-width:420px">{{ c.text }}</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="wrap" style="padding:96px 22px 40px">
+  <div class="card" style="padding:48px 34px">
+    <div class="stat-band">
+      <div><div class="v grad-text">2</div><div class="muted">years of daily history</div></div>
+      <div><div class="v grad-text">{{ '{:,}'.format(totals.orders) }}</div><div class="muted">customer orders</div></div>
+      <div><div class="v grad-text">₹{{ '%.1f' | format(totals.sales / 1e7) }} Cr</div><div class="muted">of sales</div></div>
+      <div><div class="v grad-text">{{ totals.products }}</div><div class="muted">products</div></div>
+      <div><div class="v grad-text">{{ totals.customers }}</div><div class="muted">schools, shops and offices</div></div>
+    </div>
+    <div style="text-align:center;margin-top:40px">
+      <h2 style="font-size:34px;letter-spacing:-0.03em">Ready for today?</h2>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:20px">
+        <a class="btn lg" href="/">Open today's overview {{ icon("arrow", 18) }}</a>
+        <a class="btn grey lg" href="/production">Go to the floor</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -13,7 +13,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from . import seed
 from .db import engine
-from .routers import accounts, auth, dashboard, export, forecast, production, products, purchases, sales, stock
+from .routers import accounts, auth, dashboard, export, forecast, home, production, products, purchases, sales, stock
 from .web import HERE, NotSignedIn
 
 
@@ -36,7 +36,7 @@ async def to_login(request: Request, exc: NotSignedIn):
     return RedirectResponse("/login", status_code=303)
 
 
-for r in (auth, dashboard, products, production, stock, purchases, sales, accounts, forecast, export):
+for r in (auth, home, dashboard, products, production, stock, purchases, sales, accounts, forecast, export):
     app.include_router(r.router)
 
 
